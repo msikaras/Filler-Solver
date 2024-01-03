@@ -49,7 +49,7 @@ public class Board {
     }
 
     private void updateHelper(String targetColor, String originalColor, boolean p1Turn, int w, int h,
-            Integer[][] newBoard) {
+            Integer[][] newBoard, boolean checkTargets) {
         if (w < 0 || w >= width || h < 0 || h >= height) {
             return; // Out of bounds
         }
@@ -59,21 +59,24 @@ public class Board {
         if (board[w][h] != colorToInt(originalColor) && board[w][h] != colorToInt(targetColor)) {
             return; // Color not applicable
         }
+        if (checkTargets && board[w][h] != colorToInt(targetColor)) {
+            return; // Not target
+        }
 
         visited[w][h] = p1Turn ? 1 : 2;
 
         if (board[w][h] == colorToInt(targetColor)) {
-            updateHelper(targetColor, originalColor, p1Turn, w, h - 1, newBoard); // UP
-            updateHelper(targetColor, originalColor, p1Turn, w + 1, h, newBoard); // RIGHT
-            updateHelper(targetColor, originalColor, p1Turn, w - 1, h, newBoard); // LEFT
-            updateHelper(targetColor, originalColor, p1Turn, w, h + 1, newBoard); // DOWN
+            updateHelper(targetColor, originalColor, p1Turn, w, h - 1, newBoard, true); // UP
+            updateHelper(targetColor, originalColor, p1Turn, w + 1, h, newBoard, true); // RIGHT
+            updateHelper(targetColor, originalColor, p1Turn, w - 1, h, newBoard, true); // LEFT
+            updateHelper(targetColor, originalColor, p1Turn, w, h + 1, newBoard, true); // DOWN
         }
 
-        if (board[w][h] == colorToInt(originalColor)) {
-            updateHelper(targetColor, originalColor, p1Turn, w, h - 1, newBoard); // UP
-            updateHelper(targetColor, originalColor, p1Turn, w + 1, h, newBoard); // RIGHT
-            updateHelper(targetColor, originalColor, p1Turn, w - 1, h, newBoard); // LEFT
-            updateHelper(targetColor, originalColor, p1Turn, w, h + 1, newBoard); // DOWN
+        if (!checkTargets && board[w][h] == colorToInt(originalColor)) {
+            updateHelper(targetColor, originalColor, p1Turn, w, h - 1, newBoard, false); // UP
+            updateHelper(targetColor, originalColor, p1Turn, w + 1, h, newBoard, false); // RIGHT
+            updateHelper(targetColor, originalColor, p1Turn, w - 1, h, newBoard, false); // LEFT
+            updateHelper(targetColor, originalColor, p1Turn, w, h + 1, newBoard, false); // DOWN
         }
 
         newBoard[w][h] = colorToInt(targetColor);
@@ -87,11 +90,11 @@ public class Board {
         if (p1Turn) {
             p1Score = 0;
             originalColor = board[0][height - 1];
-            updateHelper(entry, colorMap.get(originalColor), p1Turn, 0, height - 1, newBoard);
+            updateHelper(entry, colorMap.get(originalColor), p1Turn, 0, height - 1, newBoard, false);
         } else {
             p2Score = 0;
             originalColor = board[width - 1][0];
-            updateHelper(entry, colorMap.get(originalColor), p1Turn, width - 1, 0, newBoard);
+            updateHelper(entry, colorMap.get(originalColor), p1Turn, width - 1, 0, newBoard, false);
         }
 
         board = newBoard;
@@ -111,18 +114,22 @@ public class Board {
         }
     }
 
-    public boolean checkGameOver(Map<Integer, String> colorsAvailable) {
-        for (Map.Entry<Integer, String> entry : colorsAvailable.entrySet()) {
-            if (tryColor(entry.getValue()) != 0) {
-                return false;
+    public boolean checkGameOver() {
+        HashMap<Integer, Integer> temp = new HashMap<Integer, Integer>();
+
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                if (!temp.containsKey(board[w][h])) {
+                    temp.put(board[w][h], 1);
+                }
             }
         }
 
-        return true;
-    }
+        if (temp.size() > 2) {
+            return false;
+        }
 
-    private int tryColor(String entry) {
-        return -1;
+        return true;
     }
 
     private int colorToInt(String entry) {
@@ -180,6 +187,16 @@ public class Board {
 
     public void printScores() {
         System.out.println("Player 1 Score: " + p1Score + " | Player 2 Score: " + p2Score);
+    }
+
+    public void printWinner() {
+        if (p1Score > p2Score) {
+            System.out.println("Player 1 wins!");
+        } else if (p2Score > p1Score) {
+            System.out.println("Player 2 wins!");
+        } else {
+            System.out.println("It's a tie!");
+        }
     }
 
     public String toString() {

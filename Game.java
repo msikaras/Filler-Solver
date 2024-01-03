@@ -39,7 +39,10 @@ public class Game {
             board.updateBoard(entry, p1Turn);
             p1Turn = !p1Turn;
             fillColorsAvailable();
-            if (board.checkGameOver(colorsAvailable)) {
+            if (board.checkGameOver()) {
+                System.out.print(board);
+                System.out.println("Game Over!");
+                board.printWinner();
                 break;
             }
         }
