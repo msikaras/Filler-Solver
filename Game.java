@@ -41,6 +41,7 @@ public class Game {
             fillColorsAvailable();
             if (board.checkGameOver()) {
                 System.out.print(board);
+                board.printScores();
                 System.out.println("Game Over!");
                 board.printWinner();
                 break;

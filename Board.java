@@ -1,6 +1,5 @@
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class Board {
@@ -28,6 +27,24 @@ public class Board {
         this.height = h;
         this.board = new Integer[width][height];
         fillBoard();
+        this.visited = new Integer[width][height];
+        setVisited();
+        this.colorMap = new HashMap<>();
+        setColorMap();
+    }
+
+    public Board(int w, int h, String s) {
+        this.width = w;
+        this.height = h;
+        this.board = new Integer[width][height];
+        int count = 0;
+        char[] cArr = s.toCharArray();
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                board[i][j] = colorToInt(Character.toString(cArr[count]));
+                count++;
+            }
+        }
         this.visited = new Integer[width][height];
         setVisited();
         this.colorMap = new HashMap<>();
