@@ -35,6 +35,7 @@ public class Game {
         while (true) {
             System.out.print(board);
             board.printScores();
+            System.out.println("Best Color: " + board.findBestMove(this, 4, p1Turn));
             askInput();
             board.updateBoard(entry, p1Turn);
             p1Turn = !p1Turn;
@@ -81,5 +82,9 @@ public class Game {
         for (Map.Entry<Integer, String> entry : colorsAvailable.entrySet()) {
             System.out.print(entry.getValue() + " ");
         }
+    }
+
+    public Set<String> getAvailableColors() {
+        return new HashSet<>(colorsAvailable.values());
     }
 }

@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
 
 public class Board {
     private int width;
@@ -49,6 +50,62 @@ public class Board {
         setVisited();
         this.colorMap = new HashMap<>();
         setColorMap();
+    }
+
+    private int minimax(Game g, Board board, int depth, int alpha, int beta, boolean p1Turn) {
+        if (depth == 0 || checkGameOver()) {
+            return p1Score - p2Score; // Return the difference in scores
+        }
+    
+        Set<String> availableColors = g.getAvailableColors();
+    
+        if (p1Turn) {
+            int maxEval = Integer.MIN_VALUE;
+            for (String color : availableColors) {
+                Board newBoard = new Board(this.width, this.height, this.getBoardString());
+                newBoard.updateBoard(color, true);
+                int eval = newBoard.minimax(g, newBoard, depth - 1, alpha, beta, false);
+                maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
+                if (beta <= alpha) {
+                    break; // Beta cutoff
+                }
+            }
+            return maxEval;
+        } else {
+            int minEval = Integer.MAX_VALUE;
+            for (String color : availableColors) {
+                Board newBoard = new Board(this.width, this.height, this.getBoardString());
+                newBoard.updateBoard(color, false);
+                int eval = newBoard.minimax(g, newBoard, depth - 1, alpha, beta, true);
+                minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
+                if (beta <= alpha) {
+                    break; // Alpha cutoff
+                }
+            }
+            return minEval;
+        }
+    }
+
+    public String findBestMove(Game g, int depth, boolean p1Turn) {
+        int bestScore = p1Turn ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        String bestMove = null;
+    
+        Set<String> availableColors = g.getAvailableColors();
+    
+        for (String color : availableColors) {
+            Board newBoard = new Board(this.width, this.height, this.getBoardString());
+            newBoard.updateBoard(color, p1Turn);
+            int score = newBoard.minimax(g, this, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, !p1Turn);
+    
+            if (p1Turn && score > bestScore || !p1Turn && score < bestScore) {
+                bestScore = score;
+                bestMove = color;
+            }
+        }
+    
+        return bestMove;
     }
 
     private void setColorMap() {
@@ -202,6 +259,14 @@ public class Board {
         return board[w][h];
     }
 
+    public int getP1Score() {
+        return p1Score;
+    }
+
+    public int getP2Score() {
+        return p2Score;
+    }
+
     public void printScores() {
         System.out.println("Player 1 Score: " + p1Score + " | Player 2 Score: " + p2Score);
     }
@@ -214,6 +279,16 @@ public class Board {
         } else {
             System.out.println("It's a tie!");
         }
+    }
+
+    private String getBoardString() {
+        StringBuilder sb = new StringBuilder();
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                sb.append(colorMap.get(board[w][h]));
+            }
+        }
+        return sb.toString();
     }
 
     public String toString() {
